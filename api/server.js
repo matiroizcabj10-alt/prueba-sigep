@@ -16,6 +16,7 @@ if (!WEB_URL) console.warn('Falta WEB_URL: el navegador va a rechazar el CORS co
 
 app.use(cors({ origin: WEB_URL, credentials: true }));
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 function idSesion(req) {
   const m = /(?:^|; )sid=([^;]+)/.exec(req.headers.cookie || '');
