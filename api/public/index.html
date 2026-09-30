@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prueba Railway</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+    button { margin: .25rem .25rem .25rem 0; padding: .5rem .8rem; }
+    pre { background: #f3f4f6; padding: .75rem; border-radius: 6px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Prueba de sesion y descarga (un solo origen)</h1>
+  <p>Origen: <code id="api"></code></p>
+  <p>Usuario y clave de prueba: <code>prueba</code> / <code>prueba</code></p>
+  <button id="login">1. Iniciar sesion</button>
+  <button id="yo">2. Ver si la sesion se mantiene</button>
+  <button id="fetchxlsx">3. Descargar xlsx (fetch)</button>
+  <a href="/descarga.xlsx"><button type="button">4. Descargar xlsx (enlace)</button></a>
+  <button id="botver">5. Probar el bot Python</button>
+  <a href="/bot/descarga.xlsx"><button type="button">6. Descargar xlsx del bot</button></a>
+  <pre id="log">Sin pruebas todavia.</pre>
+  <script>
+    const log = document.getElementById('log');
+    document.getElementById('api').textContent = location.origin;
+    const escribir = (t) => { log.textContent = t; };
+
+    document.getElementById('login').onclick = async () => {
+      try {
+        const r = await fetch('/login', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ usuario: 'prueba', clave: 'prueba' }),
+        });
+        escribir('login: HTTP ' + r.status + ' ' + JSON.stringify(await r.json()));
+      } catch (e) { escribir('login fallo: ' + e.message); }
+    };
+
+    document.getElementById('yo').onclick = async () => {
+      try {
+        const r = await fetch('/yo', { credentials: 'include' });
+        const j = await r.json();
+        escribir('sesion: ' + (j.sesion ? 'SI se mantiene' : 'NO se mantiene') + ' (cookie ' + j.modo + ')');
+      } catch (e) { escribir('yo fallo: ' + e.message); }
+    };
+
+    document.getElementById('fetchxlsx').onclick = async () => {
+      try {
+        const r = await fetch('/descarga.xlsx', { credentials: 'include' });
+        if (!r.ok) return escribir('descarga: HTTP ' + r.status);
+        const blob = await r.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'prueba.xlsx';
+        a.click();
+        escribir('descarga: OK, ' + blob.size + ' bytes');
+      } catch (e) { escribir('descarga fallo: ' + e.message); }
+    };
+
+    document.getElementById('botver').onclick = async () => {
+      try {
+        const r = await fetch('/bot/version', { credentials: 'include' });
+        escribir('bot: HTTP ' + r.status + ' ' + JSON.stringify(await r.json()));
+      } catch (e) { escribir('bot fallo: ' + e.message); }
+    };
+  </script>
+</body>
+</html>
